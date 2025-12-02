@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Личный кабинет — Кулинарный Блог</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #fdf9f5, #ffeccc);
+      color: #333;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #d35400, #e67e22);
+      color: white;
+      text-align: center;
+      padding: 1.5rem 1rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      background: white;
+      padding: 1.75rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #e67e22;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .user-info h2 {
+      font-size: 1.75rem;
+      color: #d35400;
+      margin-bottom: 0.25rem;
+    }
+
+    .user-meta {
+      color: #777;
+      font-size: 0.95rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #e67e22;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .section {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: #fef9f6;
+      padding: 1.25rem 1.5rem;
+      font-size: 1.4rem;
+      color: #d35400;
+      font-weight: 600;
+      border-bottom: 1px solid #f0e9e3;
+    }
+
+    .section-body {
+      padding: 1.5rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      padding: 2rem;
+    }
+
+    .articles-list, .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .article-item, .comment-item {
+      padding: 1.25rem;
+      border-radius: 12px;
+      background: #fdfdfd;
+      border-left: 4px solid #e67e22;
+    }
+
+    .article-item h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: #d35400;
+    }
+
+    .article-meta {
+      font-size: 0.9rem;
+      color: #777;
+      margin-bottom: 0.75rem;
+    }
+
+    .comment-item {
+      border-left-color: #5499c7;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .comment-article {
+      font-weight: 600;
+      color: #5499c7;
+    }
+
+    .comment-date {
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    .comment-text {
+      margin-top: 0.5rem;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: #888;
+      font-size: 0.9rem;
+      border-top: 1px solid #f0e9e3;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      .profile-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .stats {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Кулинарный Блог</h1>
+    <p>Кабинет пользователя</p>
+  </header>
+
+  <div class="container">
+    <!-- Профиль -->
+    <div class="profile-header">
+      <div class="avatar" id="avatar-placeholder">А</div>
+      <div class="user-info">
+        <h2 id="user-fullname">{{user.first_name}} {{user.last_name}}</h2>
+        <p class="user-meta">
+          <span id="user-login">@{{user.username}}</span> • <span id="user-email">{{user.email}}</span>
+        </p>
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-value" id="articles-count">{{articles_length}}</div>
+            <div class="stat-label">статьи</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="comments-count">{{comments_length}}</div>
+            <div class="stat-label">комментарии</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Мои статьи -->
+    <section class="section">
+      <div class="section-header">Cтатьи пользователя</div>
+      <div class="section-body">
+        <div id="articles-list" class="articles-list">
+          <!-- Статьи  -->
+            {% if articles_length == 0 %}
+            <div class="empty-state">У пользователя нет опубликованных статей :(</div>
+            {% else %}
+            {% for article in articles %}
+            <div class="article-item">
+            <a href="{% url 'article_url' article.id %}"><h3>{{article.title}}</h3></a>
+            <p class="article-meta">Опубликовано: {{article.pub_date}}</p>
+            <p>{{article.article | truncatechars:100 | safe}}</p>
+          </div>
+            {% endfor %}
+            {% endif %}
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Мои комментарии -->
+    <section class="section">
+      <div class="section-header">Комментарии пользователя</div>
+      <div class="section-body">
+        <div id="comments-list" class="comments-list">
+          <!-- Комментарии -->
+            {% if comments_length == 0 %}
+            <div class="empty-state">Пользователь ещё не оставлял комментариев.</div>
+            {% else %}
+            {% for comment in comments %}
+             <div class="comment-item">
+            <div class="comment-header">
+              <a href="{% url 'article_url' comment.article.id %}" class="comment-article">→ {{comment.article.title}}</a>
+              <span class="comment-date">{{comment.pub_date}}</span>
+            </div>
+            <div class="comment-text">{{comment.comment|truncatechars:100}}</div>
+          </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>© 2025 Кулинарный Блог • Личный кабинет</p>
+  </footer>
+
+
+</body>
+</html>
+

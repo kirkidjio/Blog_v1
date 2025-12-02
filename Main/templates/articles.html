@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Идеальная паста карбонара за 20 минут — Кулинарный Блог</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #fdf9f5;
+      padding-bottom: 2rem;
+    }
+
+    header {
+      background: linear-gradient(135deg, #d35400, #e67e22);
+      color: white;
+      text-align: center;
+      padding: 1.25rem 1rem;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .article-header {
+      text-align: center;
+      margin: 2rem 0 1.5rem;
+    }
+
+    .article-header h1 {
+      font-size: 2rem;
+      color: #d35400;
+      margin-bottom: 0.5rem;
+    }
+
+    .article-meta {
+      color: #787777;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .article-image {
+      width: 100%;
+      height: 350px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin: 1.5rem 0;
+      background-color: #eee;
+    }
+
+    .article-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+      font-size: 1.05rem;
+    }
+
+    .article-content p {
+      margin-bottom: 1.25rem;
+    }
+
+    .article-content ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .article-content li {
+      margin-bottom: 0.5rem;
+    }
+
+    .comments-section h2 {
+      font-size: 1.6rem;
+      color: #d35400;
+      margin: 2rem 0 1rem;
+      text-align: center;
+    }
+
+    .comment-form {
+      background: white;
+      padding: 1.75rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #e67e22;
+    }
+
+    .form-group textarea {
+      height: 120px;
+      resize: vertical;
+    }
+
+    .btn {
+      background: #e67e22;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #d35400;
+    }
+
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .comment {
+      background: white;
+      padding: 1.25rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .comment-author {
+      font-weight: 600;
+      color: #e67e22;
+    }
+
+    .comment-date {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .comment-text {
+      line-height: 1.5;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      background: #27ae60;
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateX(200%);
+      transition: transform 0.4s ease;
+      z-index: 1000;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    footer {
+      text-align: center;
+      color: #777;
+      font-size: 0.9rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Кулинарный Блог</h1>
+  </header>
+
+  <div class="container">
+    <article>
+      <div class="article-header">
+        <h1>{{article.title}}</h1>
+        <p class="article-meta">Автор: <a href="{% url 'account_show' article.author.id %}">{{article.author.first_name}}</a> · {{article.pub_date}}</p>
+      </div>
+
+      <img
+        src="{{article.image.url}}"
+        alt="{{article.title}}"
+        class="article-image"
+      >
+
+      <div class="article-content">
+        {{article.article|safe}}
+      </div>
+
+      <section class="comments-section">
+        <h2>Комментарии (<span id="comments-count">0</span>)</h2>
+
+        <form id="comment-form" class="comment-form" name="comment" method="POST" action="{% url 'publication_comment' article.id %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="text">Комментарий</label>
+            <textarea id="text" name="comment_text" required></textarea>
+          </div>
+          <button type="submit" class="btn">Отправить</button>
+        </form>
+
+        <div id="comments-list" class="comments-list">
+          <!-- Комментарии появятся здесь -->
+            {% if comments is not None %}
+            {% for comment in comments %}
+            <div class="comment-header">
+            <a href="{% url 'account_show' comment.author.id %}" class="comment-author">{{comment.author.first_name}}</a>
+            <span class="comment-date">{{comment.pub_date}}</span>
+          </div>
+
+          <div class="comment-text">{{comment.comment}}</div>
+        {% endfor %}
+        {% endif %}
+
+        </div>
+
+
+      </section>
+    </article>
+
+    <footer>
+      <p>© 2025 Кулинарный Блог</p>
+    </footer>
+  </div>
+
+
+
+
+</body>
+</html>
+

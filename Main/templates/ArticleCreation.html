@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Редактор статей — Кулинарный Блог</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #d35400;
+      --primary-light: #e67e22;
+      --bg: #fdf9f5;
+      --card: white;
+      --text: #333;
+      --text-secondary: #777;
+      --border: #eee;
+      --shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .editor-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .editor-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 140px);
+    }
+
+    .panel-header {
+      padding: 1.25rem 1.5rem;
+      background: #fef9f6;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .status-badge {
+      padding: 0.35rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-draft { background: #e3f2fd; color: #1976d2; }
+    .status-ready { background: #e8f5e9; color: #2e7d32; }
+    .status-published { background: #f3e5f5; color: #7b1fa2; }
+
+    .panel-body {
+      flex: 1;
+      overflow: auto;
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    /* Редактор */
+    .editor-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .editor-input:focus {
+      border-color: var(--primary-light);
+    }
+
+    .markdown-editor {
+      width: 100%;
+      min-height: 300px;
+      padding: 1.25rem;
+      border: 2px dashed #f0e9e3;
+      border-radius: 12px;
+      background: #fcfaf8;
+      font-family: 'SFMono-Regular', 'Consolas', monospace;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .markdown-editor:focus {
+      border-color: var(--primary-light);
+      background: white;
+    }
+
+    .editor-hint {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .editor-hint svg {
+      flex-shrink: 0;
+    }
+
+    /* Контролы */
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      padding: 0.7rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--primary-light);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--primary-light);
+      color: var(--primary-light);
+    }
+
+    .btn-outline:hover {
+      background: rgba(230, 126, 34, 0.05);
+    }
+
+    .btn-icon {
+      font-size: 1.1rem;
+    }
+
+    .save-status {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.75rem;
+    }
+
+    /* Предпросмотр */
+    .preview-content {
+      padding: 2rem;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .preview-content h1 {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+    }
+
+    .preview-meta {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .preview-cover {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #f5f0eb;
+      margin-bottom: 1.75rem;
+    }
+
+    .preview-content h2 {
+      font-size: 1.5rem;
+      margin: 1.5rem 0 1rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .preview-content h3 {
+      font-size: 1.25rem;
+      margin: 1.25rem 0 0.75rem;
+      color: #555;
+    }
+
+    .preview-content ul, .preview-content ol {
+      padding-left: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .preview-content li {
+      margin-bottom: 0.5rem;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      background: #27ae60;
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      transform: translateX(200%);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000;
+      max-width: 360px;
+      font-weight: 500;
+    }
+
+    .notification.error { background: #e74c3c; }
+    .notification.show { transform: translateX(0); }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    /* Иконки (SVG inline) */
+    .icon {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Кулинарный Блог</h1>
+    <p>Редактор статей · Просто. Красиво. Вкусно.</p>
+  </header>
+
+  <div class="editor-container">
+    <!-- Левая панель: редактор -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Редактор</div>
+        <span class="status-badge status-draft" id="status-badge">Черновик</span>
+      </div>
+        <form method="POST" name=""></form>
+      <div class="panel-body">
+        <input
+          type="text"
+          id="title-input"
+          class="editor-input"
+          placeholder="Введите заголовок статьи..."
+          value="Как приготовить идеальный бефстроганов за 30 минут"
+        >
+
+        <textarea
+          id="content-input"
+          class="markdown-editor"
+          placeholder="Начните писать здесь...&#10;&#10;Подсказки по форматированию:&#10;- **жирный** → **текст**&#10;- *курсив* → *текст*&#10;- Заголовок → ## Заголовок&#10;- Список → - эл1&#10;          - эл2">&#10;## Ингредиенты&#10;&#10;- 500 г говядины (вырезка)&#10;- 1 луковица&#10;- 200 г шампиньонов&#10;- 200 мл сметаны 20%&#10;- 2 ст.л. томатной пасты&#10;- Соль, перец, паприка — по вкусу&#10;&#10;## Пошаговый рецепт&#10;&#10;1. **Нарежьте говядину** тонкими полосками (против волокон).&#10;2. *Обжарьте* на сильном огне 2–3 минуты до корочки.&#10;3. Добавьте лук и грибы, тушите 5 минут.&#10;4. Влейте сметану + томатную пасту, тушите 15 минут.&#10;&#10;### Совет&#10;Дайте блюду настояться 10 минут — соус станет гуще, а вкус насыщеннее.&#10;&#10;Приятного аппетита! 🍽️"
+        ></textarea>
+
+        <div class="editor-hint">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+
+        </div>
+
+        <div class="controls">
+          <button id="save-draft" class="btn btn-outline">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="12 11 12 19 16 15"></polyline></svg>
+            Сохранить черновик
+          </button>
+          <button id="publish" class="btn btn-primary">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Опубликовать
+          </button>
+        </div>
+
+        <div class="save-status" id="save-status">Никогда не сохранялось</div>
+      </div>
+    </div>
+
+
+
+  <footer>
+    <p>© 2025 Кулинарный Блог · Редактор v2.0</p>
+  </footer>
